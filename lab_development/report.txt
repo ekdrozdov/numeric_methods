@@ -1,0 +1,2 @@
+error in case_0.txt: 100%
+error in case_1.txt: 100%
