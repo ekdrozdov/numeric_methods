@@ -33,8 +33,12 @@ public:
 	inline DATA_TYPE* getX() { return x; };
 
 	inline int getDimension() { return dimension; };
+	inline int getErrorsCount() { return errorsCount; };
+	inline char* getErrorInfo() { return *errorInfo; };
 
 	virtual void printSLAE() = 0;
+
+	void saveResult(char* reslutName);
 
 protected:
 	int dimension;
@@ -54,16 +58,15 @@ protected:
 
 class SLAESolverLDLT: public SLAESolver {
 public:
+	SLAESolverLDLT();
+
 	void solve(char* infoName, char* diName, char* aalName, char* bName);
 	void printSLAE();
 
-	int copmuteRequiredMemorySize(int dimension, int lowBandWidth);
-	void computeLDLTDecomposition(DATA_TYPE* pALow, DATA_TYPE* pADiagonal,
-		int lowBandWidth, int matrixDimension);
-	void reverseRun(DATA_TYPE* l, DATA_TYPE* d, DATA_TYPE* x, DATA_TYPE* b,
-		int dimension, int lowBandWidth);
-	void directRun(DATA_TYPE* l, DATA_TYPE* x, DATA_TYPE* b,
-		int dimension, int lowBandWidth);
+	int copmuteRequiredMemorySize();
+	void computeLDLTDecomposition();
+	void reverseRun();
+	void directRun();
 
 	inline int getLowBandWidth() { return lowBandWidth; };
 

@@ -3,10 +3,15 @@
 * Purpose: solve the system of the linear algebraic equations
 * that looks like Ax = b.
 *
+* Today changes:
+*	connected to github!
+*	resolved names collision and removed extra args from func parameters
+*	exception generation was added
+*
 * @author Edward Drozdov
 * @version 1.0 18/10/17
 */
-
+ 
 #include "slae.h"
 
 #define ERROR_INFO_SUCCESSFUL "There is no errors"
@@ -21,6 +26,8 @@ SLAESolver::SLAESolver() {
 	b = NULL;
 	memoryController = NULL;
 
+	dimension = 0;
+	
 	errorsCount = 0;
 	warningsCount = 0;
 	*errorInfo = ERROR_INFO_SUCCESSFUL;
@@ -28,69 +35,120 @@ SLAESolver::SLAESolver() {
 };
 
 
-void SLAESolverLDLT::computeLDLTDecomposition(DATA_TYPE* pALow, DATA_TYPE* pADiagonal,
-	int lowBandWidth, int matrixDimension) {
+
+void SLAESolver::saveResult(char* reslutName) {
 	if (errorsCount > 0) {
 		return;
 	}
-	else if (pALow == 0) {
+};
+
+
+/*
+* SLAESolverLDLT class implementation.
+*/
+
+SLAESolverLDLT::SLAESolverLDLT() {
+	Au = NULL;
+	Ad = NULL;
+	Al = NULL;
+	x = NULL;
+	b = NULL;
+	memoryController = NULL;
+
+	dimension = 0;
+	lowBandWidth = 0;
+
+	errorsCount = 0;
+	warningsCount = 0;
+	*errorInfo = ERROR_INFO_SUCCESSFUL;
+	*warningInfo = WARNING_INFO_SUCCESSFUL;
+};
+
+
+void SLAESolverLDLT::computeLDLTDecomposition() {
+	if (errorsCount > 0) {
+		return;
+	}
+	else if (Al == NULL) {
 		errorsCount++;
-		*errorInfo = "initilizeMemory: requested memory size less than 0";
+		*errorInfo = "computeLDLTDecomposition: low matrix pointer is NULL";
+		return;
+	}
+	else if (Ad == NULL) {
+		errorsCount++;
+		*errorInfo = "computeLDLTDecomposition: matrix diagonal pointer is NULL";
 		return;
 	}
 
-	DATA_TYPE* Al = pALow;
-	DATA_TYPE* Ad = pADiagonal;
-	int n = matrixDimension;
+	DATA_TYPE* _Al = Al;
+	DATA_TYPE* _Ad = Ad;
+	int n = dimension;
 	int p = lowBandWidth;
 
 	int im = 0;
-	for (Ad = &pADiagonal[0]; Ad < &pADiagonal[p + 1]; Ad++, im++) {
+	for (_Ad = &Ad[0]; _Ad < &Ad[p + 1]; _Ad++, im++) {
 		DATA_TYPE sumD = 0;
 		int jm = 0;
 		int shiftL = im * p + p - im;
-		for (DATA_TYPE* AdInn = pADiagonal, *Al = &pALow[shiftL];
-			AdInn < Ad; AdInn++, Al++, jm++) {
+		for (DATA_TYPE* AdInn = Ad, *_Al = &Al[shiftL];
+			AdInn < _Ad; AdInn++, _Al++, jm++) {
 
 			DATA_TYPE sumL = 0;
-			for (DATA_TYPE* Adk = pADiagonal, *Ali = &pALow[shiftL],
-				*Alj = &pALow[jm * p + p - jm];
-				Ali < Al; Adk++, Ali++, Alj++) {
+			for (DATA_TYPE* Adk = Ad, *Ali = &Al[shiftL],
+				*Alj = &Al[jm * p + p - jm];
+				Ali < _Al; Adk++, Ali++, Alj++) {
 
 				sumL += *Adk * *Ali * *Alj;
 			}
-			*Al = (*Al - sumL) / *AdInn;
-			sumD += *AdInn * *Al * *Al;
+			*_Al = (*_Al - sumL) / *AdInn;
+			sumD += *AdInn * *_Al * *_Al;
 		}
-		*Ad = *Ad - sumD;
+		*_Ad = *_Ad - sumD;
 	}
 
-	for (Ad = &pADiagonal[p + 1]; Ad < &pADiagonal[n]; Ad++, im++) {
+	for (_Ad = &Ad[p + 1]; _Ad < &Ad[n]; _Ad++, im++) {
 		DATA_TYPE sumD = 0;
 		int jm = im - p;
 		int shiftL = im * p;
 		int shiftD = im - p;
 		int jb = 0;
-		for (DATA_TYPE* AdInn = &pADiagonal[shiftD], *Al = &pALow[shiftL];
-			AdInn < Ad; AdInn++, Al++, jm++, jb++) {
+		for (DATA_TYPE* AdInn = &Ad[shiftD], *_Al = &Al[shiftL];
+			AdInn < _Ad; AdInn++, _Al++, jm++, jb++) {
 
 			DATA_TYPE sumL = 0;
-			for (DATA_TYPE* Adk = &pADiagonal[shiftD], *Ali = &pALow[shiftL],
-				*Alj = &pALow[jm * p + p - jb];
-				Ali < Al; Adk++, Ali++, Alj++) {
+			for (DATA_TYPE* Adk = &Ad[shiftD], *Ali = &Al[shiftL],
+				*Alj = &Al[jm * p + p - jb];
+				Ali < _Al; Adk++, Ali++, Alj++) {
 
 				sumL += *Adk * *Ali * *Alj;
 			}
-			*Al = (*Al - sumL) / *AdInn;
-			sumD += *AdInn * *Al * *Al;
+			*_Al = (*_Al - sumL) / *AdInn;
+			sumD += *AdInn * *_Al * *_Al;
 		}
-		*Ad = *Ad - sumD;
+		*_Ad = *_Ad - sumD;
 	}
 }
 
 
-void SLAESolverLDLT::directRun(DATA_TYPE* l, DATA_TYPE* x, DATA_TYPE* b,
-	int dimension, int lowBandWidth) {
+void SLAESolverLDLT::directRun() {
+	if (errorsCount > 0) {
+		return;
+	}
+	else if (Al == NULL) {
+		errorsCount++;
+		*errorInfo = "computeLDLTDecomposition: low matrix pointer is NULL";
+		return;
+	}
+	else if (b == NULL) {
+		errorsCount++;
+		*errorInfo = "computeLDLTDecomposition: solve vector pointer is NULL";
+		return;
+	}
+	else if (x == NULL) {
+		errorsCount++;
+		*errorInfo = "computeLDLTDecomposition: variable vector pointer is NULL";
+		return;
+	}
 
 	int p = lowBandWidth;
 	int n = dimension;
@@ -101,7 +159,7 @@ void SLAESolverLDLT::directRun(DATA_TYPE* l, DATA_TYPE* x, DATA_TYPE* b,
 	DATA_TYPE* pb = b + 1;
 	for (int im = 1; im < p + 1; im++, z++, pb++) {
 		DATA_TYPE sumZ = 0;
-		for (DATA_TYPE* zInn = x, *li = &l[im * p + p - im]; zInn < z; zInn++, li++) {
+		for (DATA_TYPE* zInn = x, *li = &Al[im * p + p - im]; zInn < z; zInn++, li++) {
 			sumZ += *li * *zInn;
 		}
 		*z = *pb - sumZ;
@@ -109,7 +167,7 @@ void SLAESolverLDLT::directRun(DATA_TYPE* l, DATA_TYPE* x, DATA_TYPE* b,
 
 	for (int im = p + 1; im < n; im++, z++, pb++) {
 		DATA_TYPE sumZ = 0;
-		for (DATA_TYPE* zInn = &x[im - p], *li = &l[im * p]; zInn < z; zInn++, li++) {
+		for (DATA_TYPE* zInn = &x[im - p], *li = &Al[im * p]; zInn < z; zInn++, li++) {
 			sumZ += *li * *zInn;
 		}
 		*z = *pb - sumZ;
@@ -117,29 +175,46 @@ void SLAESolverLDLT::directRun(DATA_TYPE* l, DATA_TYPE* x, DATA_TYPE* b,
 }
 
 
-void SLAESolverLDLT::reverseRun(DATA_TYPE* l, DATA_TYPE* d, DATA_TYPE* x, DATA_TYPE* b,
-	int dimension, int lowBandWidth) {
+void SLAESolverLDLT::reverseRun() {
+	if (errorsCount > 0) {
+		return;
+	}
+	else if (Al == NULL) {
+		errorsCount++;
+		*errorInfo = "computeLDLTDecomposition: low matrix pointer is NULL";
+		return;
+	}
+	else if (Ad == NULL) {
+		errorsCount++;
+		*errorInfo = "computeLDLTDecomposition: matrix diagonal pointer is NULL";
+		return;
+	}
+	else if (x == NULL) {
+		errorsCount++;
+		*errorInfo = "computeLDLTDecomposition: variable vector pointer is NULL";
+		return;
+	}
 
 	int p = lowBandWidth;
 	int n = dimension;
 
 	DATA_TYPE* y = x;
-	DATA_TYPE* pd = d;
+	DATA_TYPE* pd = Ad;
 	for (int im = 0; im < n; im++, y++, pd++) {
 		*y = *y / *pd;
 	}
 
 	DATA_TYPE* px = &x[n - 1];
-	pd = &d[n - 1];
+	pd = &Ad[n - 1];
 	for (int im = n - 1; im > p; im--, px--, pd--) {
-		for (DATA_TYPE* xInn = &x[im - p], *pl = &l[im * p];
+		for (DATA_TYPE* xInn = &x[im - p], *pl = &Al[im * p];
 			xInn < px; xInn++, pl++) {
 			*xInn = *xInn - *pl * *px;
 		}
 	}
 
 	for (int im = p; im >= 0; im--, px--, pd--) {
-		for (DATA_TYPE* xInn = x, *pl = &l[im * p + p - im];
+		for (DATA_TYPE* xInn = x, *pl = &Al[im * p + p - im];
 			xInn < px; xInn++, pl++) {
 			*xInn = *xInn - *pl * *px;
 		}
@@ -147,7 +222,21 @@ void SLAESolverLDLT::reverseRun(DATA_TYPE* l, DATA_TYPE* d, DATA_TYPE* x, DATA_T
 }
 
 
-int SLAESolverLDLT::copmuteRequiredMemorySize(int dimension, int lowBandWidth) {
+int SLAESolverLDLT::copmuteRequiredMemorySize() {
+	if (errorsCount > 0) {
+		return -1;
+	}
+	else if (dimension < 0) {
+		errorsCount++;
+		*errorInfo = "copmuteRequiredMemorySize: dimension less than 0";
+		return -1;
+	}
+	else if (lowBandWidth < 0) {
+		errorsCount++;
+		*errorInfo = "copmuteRequiredMemorySize: low band width less than 0";
+		return -1;
+	}
+
 	int memoryForMatrixL = dimension * lowBandWidth;
 	int memoryForDiagonal = dimension;
 	int memoryForVectorX = dimension;
@@ -158,21 +247,26 @@ int SLAESolverLDLT::copmuteRequiredMemorySize(int dimension, int lowBandWidth) {
 
 void SLAESolverLDLT::
 solve(char* infoName, char* diName, char* aalName, char* bName) {
+	if (errorsCount > 0) {
+		return;
+	}
+
 	dimension = 0;
 	lowBandWidth = 0;
 	memoryController = new PseudoDynamicMemoryController;
 	memoryController->loadInfo(infoName, &dimension, &lowBandWidth);
-	memoryController->initilizeMemory(copmuteRequiredMemorySize(dimension, lowBandWidth));
+
+	memoryController->initilizeMemory(copmuteRequiredMemorySize());
 
 	Al = memoryController->loadFile(aalName, lowBandWidth, dimension);
 	Ad = memoryController->loadFile(diName, dimension, 1);
 
-	computeLDLTDecomposition(Al, Ad, lowBandWidth, dimension);
+	computeLDLTDecomposition();
 
 	b = memoryController->loadFile(bName, dimension, 1);
 	x = memoryController->holdMemory(dimension, 0);
-	directRun(Al, x, b, dimension, lowBandWidth);
-	reverseRun(Al, Ad, x, b, dimension, lowBandWidth);
+	directRun();
+	reverseRun();
 };
 
 

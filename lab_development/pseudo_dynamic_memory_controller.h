@@ -33,6 +33,9 @@ public:
 	MEMORY_TYPE* loadFile(char* readingFileName, int columnsTotal, int stringsTotal);
 	int loadInfo(char* readingFileName, int* dimension, int* lowBandWidth);
 
+	inline int getErrorsCount() { return errorsCount; };
+	inline char* getErrorInfo() { return *errorInfo; };
+
 	int printMemoryContent(int startElementNumber, int endElementNumber, int stringLength);
 	int printMemoryContent(MEMORY_TYPE* pointer, int quantity, int stringLength);
 	int printMemoryContent(MEMORY_TYPE* pointer, int quantity, int stringLength, char* header);
