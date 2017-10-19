@@ -31,8 +31,11 @@ void shutdown() {
 int main(int argc, char* argv[]) {
 	SLAESolverLDLT slae;
 
+	//slae->memoryController.exceptionGenerator.setExceptionAlertLevel(2);
+	slae.setAlertLevel(2);
 	slae.solve("info.txt", "di.txt", "aal.txt", "b.txt");
 	slae.printSLAE();
+	slae.saveResult("result.txt");
 		
 	shutdown();
 	return EXIT_SUCCESS;

@@ -26,33 +26,26 @@ public:
 	SLAESolver();
 
 	virtual void solve(char* infoName, char* diName, char* aalName, char* bName) = 0;
+	virtual void printSLAE() = 0;
+	void saveResult(char* resultName);
+
+	void setAlertLevel(int newAlertLevel);
 
 	inline DATA_TYPE* getAl() { return Al; };
 	inline DATA_TYPE* getAd() { return Ad; };
 	inline DATA_TYPE* getB() { return b; };
 	inline DATA_TYPE* getX() { return x; };
-
-	inline int getDimension() { return dimension; };
-	inline int getErrorsCount() { return errorsCount; };
-	inline char* getErrorInfo() { return *errorInfo; };
-
-	virtual void printSLAE() = 0;
-
-	void saveResult(char* reslutName);
+	inline int getDimension() { return dimension; };	
 
 protected:
 	int dimension;
 	PseudoDynamicMemoryController* memoryController;
+	ExceptionGenerator exceptionGenerator;
 	DATA_TYPE* Au;
 	DATA_TYPE* Ad; 
 	DATA_TYPE* Al; 
 	DATA_TYPE* x; 
 	DATA_TYPE* b;
-	
-	int errorsCount;
-	int warningsCount;
-	char* errorInfo[ERROR_INFO_STRING_LENGTH];
-	char* warningInfo[WARNING_INFO_STRING_LENGTH];
 };
 
 
@@ -61,15 +54,14 @@ public:
 	SLAESolverLDLT();
 
 	void solve(char* infoName, char* diName, char* aalName, char* bName);
-	void printSLAE();
-
-	int copmuteRequiredMemorySize();
-	void computeLDLTDecomposition();
-	void reverseRun();
-	void directRun();
+	void printSLAE();	
 
 	inline int getLowBandWidth() { return lowBandWidth; };
 
 private:
+	int copmuteRequiredMemorySize();
+	void computeLDLTDecomposition();
+	void reverseRun();
+	void directRun();
 	int lowBandWidth;
 };

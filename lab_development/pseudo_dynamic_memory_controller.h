@@ -3,7 +3,7 @@
 * Purpose: create and control a heap.
 *
 * To do: 
-*	Create multi-type PseudoDynamicMemoryController;
+*	Create multi-type PseudoDynamicMemoryController (change class to class template);
 *	function "~PseudoDynamicMemoryController()";
 *	function "void releaseMemory()".
 *
@@ -14,11 +14,11 @@
 #pragma once
 #include <stdlib.h>
 #include <iostream>
+#include "exception_generator.h"
 
 #define MEMORY_TYPE double
 #define STRING_FORMAT "%lf"
-#define ERROR_INFO_STRING_LENGTH 70
-#define WARNING_INFO_STRING_LENGTH 70
+#define STRING_OUTPUT_FORMAT "%.15le\n"
 
 
 class PseudoDynamicMemoryController {
@@ -26,32 +26,28 @@ public:
 	PseudoDynamicMemoryController();
 
 	int initilizeMemory(int requiredMemorySize);
-	inline MEMORY_TYPE* getMemoryPoolPointer() { return memoryPoolPointer; };
 
 	MEMORY_TYPE* holdMemory(int quantity);
 	MEMORY_TYPE* holdMemory(int quantity, MEMORY_TYPE initialValue);	
+
 	MEMORY_TYPE* loadFile(char* readingFileName, int columnsTotal, int stringsTotal);
 	int loadInfo(char* readingFileName, int* dimension, int* lowBandWidth);
 
-	inline int getErrorsCount() { return errorsCount; };
-	inline char* getErrorInfo() { return *errorInfo; };
+	void saveInFile(char* writingFileName, MEMORY_TYPE* pointer, int quantity, int stringLength);
+
+	void printMemoryUsage();
+
+	void setAlertLevel(int newAlertLevel);
 
 	int printMemoryContent(int startElementNumber, int endElementNumber, int stringLength);
 	int printMemoryContent(MEMORY_TYPE* pointer, int quantity, int stringLength);
 	int printMemoryContent(MEMORY_TYPE* pointer, int quantity, int stringLength, char* header);
-
-	void printMemoryUsage();
-
-	void printErrorInfo();
-	void printWarningInfo();
+	
+	inline MEMORY_TYPE* getMemoryPoolPointer() { return memoryPoolPointer; };
 
 private:
 	int memoryLeft;
 	int shift;
 	MEMORY_TYPE* memoryPoolPointer;
-
-	int errorsCount;
-	int warningsCount;
-	char* errorInfo[ERROR_INFO_STRING_LENGTH];
-	char* warningInfo[WARNING_INFO_STRING_LENGTH];
+	ExceptionGenerator exceptionGenerator;
 };

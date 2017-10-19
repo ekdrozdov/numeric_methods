@@ -14,38 +14,41 @@
  
 #include "slae.h"
 
-#define ERROR_INFO_SUCCESSFUL "There is no errors"
-#define WARNING_INFO_SUCCESSFUL "There is no warnings"
-
 
 SLAESolver::SLAESolver() {
+	dimension = 0;
 	Au = NULL;
 	Ad = NULL;
 	Al = NULL;
 	x = NULL;
 	b = NULL;
-	memoryController = NULL;
-
-	dimension = 0;
-	
-	errorsCount = 0;
-	warningsCount = 0;
-	*errorInfo = ERROR_INFO_SUCCESSFUL;
-	*warningInfo = WARNING_INFO_SUCCESSFUL;
+	//memoryController = NULL;
+	memoryController = new PseudoDynamicMemoryController;
+	//ExceptionGenerator();
 };
 
 
+void SLAESolver::saveResult(char* resultName) {
+	exceptionGenerator.checkIsError();
+	exceptionGenerator.generateError(Al == NULL,
+		"saveResult: low matrix pointer is NULL");
+	
+	memoryController->saveInFile(resultName, x, dimension, dimension);
+};
 
-void SLAESolver::saveResult(char* reslutName) {
-	if (errorsCount > 0) {
-		return;
-	}
+
+void SLAESolver::setAlertLevel(int newAlertLevel) {
+	exceptionGenerator.setExceptionAlertLevel(newAlertLevel);
+	memoryController->setAlertLevel(newAlertLevel);
 };
 
 
 /*
-* SLAESolverLDLT class implementation.
+* Section II
+*	SLAESolverLDLT class implementation.
+*
 */
+
 
 SLAESolverLDLT::SLAESolverLDLT() {
 	Au = NULL;
@@ -53,32 +56,19 @@ SLAESolverLDLT::SLAESolverLDLT() {
 	Al = NULL;
 	x = NULL;
 	b = NULL;
-	memoryController = NULL;
+	//memoryController = NULL;
 
 	dimension = 0;
 	lowBandWidth = 0;
-
-	errorsCount = 0;
-	warningsCount = 0;
-	*errorInfo = ERROR_INFO_SUCCESSFUL;
-	*warningInfo = WARNING_INFO_SUCCESSFUL;
 };
 
 
 void SLAESolverLDLT::computeLDLTDecomposition() {
-	if (errorsCount > 0) {
-		return;
-	}
-	else if (Al == NULL) {
-		errorsCount++;
-		*errorInfo = "computeLDLTDecomposition: low matrix pointer is NULL";
-		return;
-	}
-	else if (Ad == NULL) {
-		errorsCount++;
-		*errorInfo = "computeLDLTDecomposition: matrix diagonal pointer is NULL";
-		return;
-	}
+	exceptionGenerator.checkIsError();
+	exceptionGenerator.generateError(Al == NULL,
+		"computeLDLTDecomposition: low matrix pointer is NULL");
+	exceptionGenerator.generateError(Ad == NULL,
+		"computeLDLTDecomposition: matrix diagonal pointer is NULL");
 
 	DATA_TYPE* _Al = Al;
 	DATA_TYPE* _Ad = Ad;
@@ -131,24 +121,13 @@ void SLAESolverLDLT::computeLDLTDecomposition() {
 
 
 void SLAESolverLDLT::directRun() {
-	if (errorsCount > 0) {
-		return;
-	}
-	else if (Al == NULL) {
-		errorsCount++;
-		*errorInfo = "computeLDLTDecomposition: low matrix pointer is NULL";
-		return;
-	}
-	else if (b == NULL) {
-		errorsCount++;
-		*errorInfo = "computeLDLTDecomposition: solve vector pointer is NULL";
-		return;
-	}
-	else if (x == NULL) {
-		errorsCount++;
-		*errorInfo = "computeLDLTDecomposition: variable vector pointer is NULL";
-		return;
-	}
+	exceptionGenerator.checkIsError();
+	exceptionGenerator.generateError(Al == NULL,
+		"directRun: low matrix pointer is NULL");
+	exceptionGenerator.generateError(b == NULL,
+		"directRun: solve vector pointer is NULL");
+	exceptionGenerator.generateError(x == NULL,
+		"directRun: variable vector pointer is NULL");
 
 	int p = lowBandWidth;
 	int n = dimension;
@@ -176,24 +155,13 @@ void SLAESolverLDLT::directRun() {
 
 
 void SLAESolverLDLT::reverseRun() {
-	if (errorsCount > 0) {
-		return;
-	}
-	else if (Al == NULL) {
-		errorsCount++;
-		*errorInfo = "computeLDLTDecomposition: low matrix pointer is NULL";
-		return;
-	}
-	else if (Ad == NULL) {
-		errorsCount++;
-		*errorInfo = "computeLDLTDecomposition: matrix diagonal pointer is NULL";
-		return;
-	}
-	else if (x == NULL) {
-		errorsCount++;
-		*errorInfo = "computeLDLTDecomposition: variable vector pointer is NULL";
-		return;
-	}
+	exceptionGenerator.checkIsError();
+	exceptionGenerator.generateError(Al == NULL,
+		"reverseRun: low matrix pointer is NULL");
+	exceptionGenerator.generateError(Ad == NULL,
+		"reverseRun: matrix diagonal pointer is NULL");
+	exceptionGenerator.generateError(x == NULL,
+		"reverseRun: variable vector pointer is NULL");
 
 	int p = lowBandWidth;
 	int n = dimension;
@@ -223,19 +191,11 @@ void SLAESolverLDLT::reverseRun() {
 
 
 int SLAESolverLDLT::copmuteRequiredMemorySize() {
-	if (errorsCount > 0) {
-		return -1;
-	}
-	else if (dimension < 0) {
-		errorsCount++;
-		*errorInfo = "copmuteRequiredMemorySize: dimension less than 0";
-		return -1;
-	}
-	else if (lowBandWidth < 0) {
-		errorsCount++;
-		*errorInfo = "copmuteRequiredMemorySize: low band width less than 0";
-		return -1;
-	}
+	exceptionGenerator.checkIsError();
+	exceptionGenerator.generateError(dimension < 0,
+		"copmuteRequiredMemorySize: dimension less than 0");
+	exceptionGenerator.generateError(lowBandWidth < 0,
+		"copmuteRequiredMemorySize: low band width less than 0");
 
 	int memoryForMatrixL = dimension * lowBandWidth;
 	int memoryForDiagonal = dimension;
@@ -247,13 +207,19 @@ int SLAESolverLDLT::copmuteRequiredMemorySize() {
 
 void SLAESolverLDLT::
 solve(char* infoName, char* diName, char* aalName, char* bName) {
-	if (errorsCount > 0) {
-		return;
-	}
+	exceptionGenerator.checkIsError();
+	exceptionGenerator.generateError(infoName == NULL,
+		"solve: info file name is NULL");
+	exceptionGenerator.generateError(diName == NULL,
+		"solve: di file name is NULL");
+	exceptionGenerator.generateError(aalName == NULL,
+		"solve: aal file name is NULL");
+	exceptionGenerator.generateError(bName == NULL,
+		"solve: b file name is NULL");
 
 	dimension = 0;
 	lowBandWidth = 0;
-	memoryController = new PseudoDynamicMemoryController;
+	//memoryController = new PseudoDynamicMemoryController;
 	memoryController->loadInfo(infoName, &dimension, &lowBandWidth);
 
 	memoryController->initilizeMemory(copmuteRequiredMemorySize());
