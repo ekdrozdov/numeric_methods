@@ -3,15 +3,10 @@
 * Purpose: solve the system of the linear algebraic equations
 * that looks like Ax = b.
 *
-* Today changes:
-*	connected to github!
-*	resolved names collision and removed extra args from func parameters
-*	exception generation was added
-*
 * @author Edward Drozdov
 * @version 1.0 18/10/17
 */
- 
+
 #include "slae.h"
 
 
@@ -22,9 +17,21 @@ SLAESolver::SLAESolver() {
 	Al = NULL;
 	x = NULL;
 	b = NULL;
-	//memoryController = NULL;
-	memoryController = new PseudoDynamicMemoryController;
-	//ExceptionGenerator();
+	memoryController = new PseudoDynamicMemoryController<DATA_TYPE>;
+};
+
+
+SLAESolver::~SLAESolver() {
+	dimension = 0;
+	if (memoryController != NULL) {
+		memoryController->~PseudoDynamicMemoryController();
+		memoryController = NULL;
+	}
+	Au = NULL;
+	Ad = NULL;
+	Al = NULL;
+	x = NULL;
+	b = NULL;
 };
 
 
@@ -32,7 +39,7 @@ void SLAESolver::saveResult(char* resultName) {
 	exceptionGenerator.checkIsError();
 	exceptionGenerator.generateError(Al == NULL,
 		"saveResult: low matrix pointer is NULL");
-	
+
 	memoryController->saveInFile(resultName, x, dimension, dimension);
 };
 
@@ -51,15 +58,14 @@ void SLAESolver::setAlertLevel(int newAlertLevel) {
 
 
 SLAESolverLDLT::SLAESolverLDLT() {
-	Au = NULL;
-	Ad = NULL;
-	Al = NULL;
-	x = NULL;
-	b = NULL;
-	//memoryController = NULL;
-
-	dimension = 0;
 	lowBandWidth = 0;
+	isDecompose = 0;
+};
+
+
+SLAESolverLDLT::~SLAESolverLDLT() {
+	lowBandWidth = 0;
+	isDecompose = 0;
 };
 
 
@@ -117,6 +123,7 @@ void SLAESolverLDLT::computeLDLTDecomposition() {
 		}
 		*_Ad = *_Ad - sumD;
 	}
+	isDecompose = 1;
 }
 
 
@@ -206,7 +213,7 @@ int SLAESolverLDLT::copmuteRequiredMemorySize() {
 
 
 void SLAESolverLDLT::
-solve(char* infoName, char* diName, char* aalName, char* bName) {
+loadMatrix(char* infoName, char* diName, char* aalName) {
 	exceptionGenerator.checkIsError();
 	exceptionGenerator.generateError(infoName == NULL,
 		"solve: info file name is NULL");
@@ -214,23 +221,26 @@ solve(char* infoName, char* diName, char* aalName, char* bName) {
 		"solve: di file name is NULL");
 	exceptionGenerator.generateError(aalName == NULL,
 		"solve: aal file name is NULL");
-	exceptionGenerator.generateError(bName == NULL,
-		"solve: b file name is NULL");
 
-	dimension = 0;
-	lowBandWidth = 0;
-	//memoryController = new PseudoDynamicMemoryController;
+	isDecompose = 0;
 	memoryController->loadInfo(infoName, &dimension, &lowBandWidth);
-
 	memoryController->initilizeMemory(copmuteRequiredMemorySize());
-
 	Al = memoryController->loadFile(aalName, lowBandWidth, dimension);
 	Ad = memoryController->loadFile(diName, dimension, 1);
+};
 
-	computeLDLTDecomposition();
+
+void SLAESolverLDLT::
+solve(char* bName) {
+	exceptionGenerator.checkIsError();
+	exceptionGenerator.generateError(bName == NULL,
+		"solve: b file name is NULL");
+	exceptionGenerator.generateError(isDecompose == 0,
+		"solve: matrix isn't decompose");
 
 	b = memoryController->loadFile(bName, dimension, 1);
 	x = memoryController->holdMemory(dimension, 0);
+	memoryController->finalize();
 	directRun();
 	reverseRun();
 };
@@ -241,4 +251,9 @@ void SLAESolverLDLT::printSLAE() {
 	memoryController->printMemoryContent(Ad, dimension, dimension, "d");
 	memoryController->printMemoryContent(b, dimension, dimension, "b");
 	memoryController->printMemoryContent(x, dimension, dimension, "x");
+};
+
+
+void SLAESolverLDLT::printSolveVector() {
+	memoryController->printMemoryContentFormat(x, dimension, dimension);
 };

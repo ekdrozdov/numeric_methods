@@ -21,10 +21,13 @@
     <ClCompile Include="runtime.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="pseudo_dynamic_memory_controller.cpp">
+    <ClCompile Include="slae.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="slae.cpp">
+    <ClCompile Include="exception_generator.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
+    <ClCompile Include="arguments_parser.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,15 +41,15 @@
     <ClInclude Include="slae.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
+    <ClInclude Include="exception_generator.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="arguments_parser.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="a.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
     <Text Include="aal.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="aau.txt">
       <Filter>Файлы ресурсов</Filter>
     </Text>
     <Text Include="di.txt">
@@ -56,6 +59,9 @@
       <Filter>Файлы ресурсов</Filter>
     </Text>
     <Text Include="b.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="result.txt">
       <Filter>Файлы ресурсов</Filter>
     </Text>
   </ItemGroup>

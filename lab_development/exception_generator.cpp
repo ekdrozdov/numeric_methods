@@ -17,8 +17,9 @@
 using namespace std;
 
 void debugShutdown() {
-	cout << "Press any key to continue...";
-	getchar();
+	// Activate when debugging.
+	//cout << "Press any key to continue...";
+	//getchar();
 }
 
 
@@ -60,8 +61,6 @@ void ExceptionGenerator::generateWarning(bool warningCondition, char* warningInf
 		if (exceptionAlertLevel > 1) {
 			printWarningInfo();
 		}
-		debugShutdown();
-		exit(EXIT_FAILURE);
 	}
 };
 
@@ -77,7 +76,7 @@ void ExceptionGenerator::printWarningInfo() {
 
 
 void ExceptionGenerator::setExceptionAlertLevel(int newAlertLevel) {
-	if ((newAlertLevel > 2) | (newAlertLevel < 0)) {
+	if ((newAlertLevel > 2) || (newAlertLevel < 0)) {
 		cout << "WARNING: setExceptionAlertLevel: incorrect alert level, set as 0" << endl;
 		exceptionAlertLevel = 0;
 	}

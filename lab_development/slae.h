@@ -24,8 +24,9 @@ using namespace std;
 class SLAESolver {
 public:	
 	SLAESolver();
+	~SLAESolver();
 
-	virtual void solve(char* infoName, char* diName, char* aalName, char* bName) = 0;
+	virtual void solve(char* bName) = 0;
 	virtual void printSLAE() = 0;
 	void saveResult(char* resultName);
 
@@ -39,7 +40,7 @@ public:
 
 protected:
 	int dimension;
-	PseudoDynamicMemoryController* memoryController;
+	PseudoDynamicMemoryController<DATA_TYPE>* memoryController;
 	ExceptionGenerator exceptionGenerator;
 	DATA_TYPE* Au;
 	DATA_TYPE* Ad; 
@@ -52,15 +53,20 @@ protected:
 class SLAESolverLDLT: public SLAESolver {
 public:
 	SLAESolverLDLT();
+	~SLAESolverLDLT();
 
-	void solve(char* infoName, char* diName, char* aalName, char* bName);
+	void loadMatrix(char* infoName, char* diName, char* aalName);
+	void computeLDLTDecomposition();
+	void solve(char* bName);
+	void printSolveVector();
 	void printSLAE();	
 
 	inline int getLowBandWidth() { return lowBandWidth; };
 
 private:
+	bool isDecompose;
+
 	int copmuteRequiredMemorySize();
-	void computeLDLTDecomposition();
 	void reverseRun();
 	void directRun();
 	int lowBandWidth;
