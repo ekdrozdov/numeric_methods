@@ -15,9 +15,13 @@
 #include <iostream>
 #include "exception_generator.h"
 
-#define MEMORY_TYPE double
-#define STRING_FORMAT "%lf"
-#define STRING_OUTPUT_FORMAT "%.15le\n"
+#define STRING_FORMAT "%f"				// %lf		| %f
+#define STRING_OUTPUT_FORMAT "%.2e\n"	// %.15le	| %.8e
+#define DATA_TYPE float				// double	| float
+
+#define STRING_FORMAT_DOUBLE "%lf"				
+#define STRING_OUTPUT_FORMAT_DOUBLE "%.2le\n"	
+#define DATA_TYPE_DOUBLE double
 
 
 template <typename MemoryType>
@@ -32,9 +36,12 @@ public:
 	MemoryType* holdMemory(int quantity, MemoryType initialValue);	
 
 	MemoryType* loadFile(char* readingFileName, int columnsTotal, int stringsTotal);
+	MemoryType* loadFileDouble(char* readingFileName, int columnsTotal, int stringsTotal);
 	int loadInfo(char* readingFileName, int* dimension, int* lowBandWidth);
 
 	void saveInFile(char* writingFileName, MemoryType* pointer, int quantity, int stringLength);
+	void saveInFileDouble(char* writingFileName, MemoryType* pointer, 
+		int quantity, int stringLength);
 
 	void printMemoryUsage();
 	void finalize();
@@ -160,6 +167,38 @@ loadFile(char* readingFileName, int columnsTotal, int stringsTotal) {
 	for (int i = 0; i < stringsTotal; i++) {
 		for (int j = 0; j < columnsTotal; j++) {
 			fscanf_s(readingFile, STRING_FORMAT, 
+				(memoryStartPointer + columnsTotal * i + j));
+		}
+	}
+	fclose(readingFile);
+	return memoryStartPointer;
+}
+
+
+template<typename MemoryType>
+MemoryType* PseudoDynamicMemoryController<typename MemoryType>::
+loadFileDouble(char* readingFileName, int columnsTotal, int stringsTotal) {
+	exceptionGenerator.checkIsError();
+	exceptionGenerator.generateError(columnsTotal < 0,
+		"loadFile: number of columns less than 0");
+	exceptionGenerator.generateError(stringsTotal < 0,
+		"loadFile: number of strings less than 0");
+
+	exceptionGenerator.generateWarning(columnsTotal == 0,
+		"loadFile: number of columns equal to 0");
+	exceptionGenerator.generateWarning(stringsTotal == 0,
+		"loadFile: number of strings equal to 0");
+
+	FILE* readingFile;
+	errno_t err = fopen_s(&readingFile, readingFileName, "r");
+	MemoryType* memoryStartPointer = holdMemory(columnsTotal * stringsTotal);
+
+	exceptionGenerator.generateError(memoryStartPointer == NULL,
+		"loadFile: cannot allocate memory");
+
+	for (int i = 0; i < stringsTotal; i++) {
+		for (int j = 0; j < columnsTotal; j++) {
+			fscanf_s(readingFile, STRING_FORMAT_DOUBLE,
 				(memoryStartPointer + columnsTotal * i + j));
 		}
 	}
@@ -330,6 +369,34 @@ saveInFile(char* writingFileName, MemoryType* pointer, int quantity, int stringL
 		for (int j = 0; j < stringLength; j++) {
 			fprintf_s(writingFile,
 				STRING_OUTPUT_FORMAT, *(pointer + stringLength * i + j));
+		}
+	}
+
+	fclose(writingFile);
+	return;
+}
+
+
+template<typename MemoryType>
+void PseudoDynamicMemoryController<typename MemoryType>::
+saveInFileDouble(char* writingFileName, MemoryType* pointer, int quantity, int stringLength) {
+	exceptionGenerator.checkIsError();
+	exceptionGenerator.generateError(pointer == NULL,
+		"saveInFile: pointer is NULL");
+	exceptionGenerator.generateError(stringLength == 0,
+		"printMemoryContent: string length equal to 0");
+
+	exceptionGenerator.generateWarning(quantity == 0,
+		"printMemoryContent: quantity equal to 0");
+	exceptionGenerator.generateWarning(stringLength == 0,
+		"printMemoryContent: string equal to 0");
+
+	FILE* writingFile;
+	errno_t err = fopen_s(&writingFile, writingFileName, "w");
+	for (int i = 0; i < (quantity / stringLength); i++) {
+		for (int j = 0; j < stringLength; j++) {
+			fprintf_s(writingFile,
+				STRING_OUTPUT_FORMAT_DOUBLE, *(pointer + stringLength * i + j));
 		}
 	}
 

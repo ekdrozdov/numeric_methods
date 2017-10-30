@@ -48,21 +48,4 @@
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="aal.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="di.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="info.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="b.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-    <Text Include="result.txt">
-      <Filter>Файлы ресурсов</Filter>
-    </Text>
-  </ItemGroup>
 </Project>

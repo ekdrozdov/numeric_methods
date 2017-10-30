@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 		shutdown();
 		return EXIT_FAILURE;
 	}
-	
+
 	char* diName[MAX_FILE_NAME_LENGTH];
 	char* aalName[MAX_FILE_NAME_LENGTH];
 	char* infoName[MAX_FILE_NAME_LENGTH];
@@ -80,18 +80,18 @@ int main(int argc, char* argv[]) {
 			return EXIT_FAILURE;
 		}
 
-		int i = 0;		
+		int i = 0;
 		for (char* p = argv[argc - 2]; *p != '\0'; p++, i++) {
 			diName[i] = p;
-		}		
+		}
 		i = 0;
 		for (char* p = argv[argc - 3]; *p != '\0'; p++, i++) {
 			aalName[i] = p;
-		}		
+		}
 		i = 0;
 		for (char* p = argv[argc - 4]; *p != '\0'; p++, i++) {
 			infoName[i] = p;
-		}		
+		}
 		i = 0;
 		for (char* p = argv[argc - 1]; *p != '\0'; p++, i++) {
 			bName[i] = p;
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
 		*diName = DEFAULT_DI_NAME;
 		*infoName = DEFAULT_INFO_NAME;
 	}
-	
+
 	SLAESolverLDLT slae;
 
 	slae.setAlertLevel(alertLevel);

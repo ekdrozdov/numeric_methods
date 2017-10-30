@@ -83,27 +83,27 @@ void SLAESolverLDLT::computeLDLTDecomposition() {
 
 	int im = 0;
 	for (_Ad = &Ad[0]; _Ad < &Ad[p + 1]; _Ad++, im++) {
-		DATA_TYPE sumD = 0;
+		SCALE sumD = 0;
 		int jm = 0;
 		int shiftL = im * p + p - im;
 		for (DATA_TYPE* AdInn = Ad, *_Al = &Al[shiftL];
 			AdInn < _Ad; AdInn++, _Al++, jm++) {
 
-			DATA_TYPE sumL = 0;
+			SCALE sumL = 0;
 			for (DATA_TYPE* Adk = Ad, *Ali = &Al[shiftL],
 				*Alj = &Al[jm * p + p - jm];
 				Ali < _Al; Adk++, Ali++, Alj++) {
 
-				sumL += *Adk * *Ali * *Alj;
+				sumL += (SCALE)(*Adk * *Ali * *Alj);
 			}
 			*_Al = (*_Al - sumL) / *AdInn;
-			sumD += *AdInn * *_Al * *_Al;
+			sumD += (SCALE)(*AdInn * *_Al * *_Al);
 		}
 		*_Ad = *_Ad - sumD;
 	}
 
 	for (_Ad = &Ad[p + 1]; _Ad < &Ad[n]; _Ad++, im++) {
-		DATA_TYPE sumD = 0;
+		SCALE sumD = 0;
 		int jm = im - p;
 		int shiftL = im * p;
 		int shiftD = im - p;
@@ -111,15 +111,15 @@ void SLAESolverLDLT::computeLDLTDecomposition() {
 		for (DATA_TYPE* AdInn = &Ad[shiftD], *_Al = &Al[shiftL];
 			AdInn < _Ad; AdInn++, _Al++, jm++, jb++) {
 
-			DATA_TYPE sumL = 0;
+			SCALE sumL = 0;
 			for (DATA_TYPE* Adk = &Ad[shiftD], *Ali = &Al[shiftL],
 				*Alj = &Al[jm * p + p - jb];
 				Ali < _Al; Adk++, Ali++, Alj++) {
 
-				sumL += *Adk * *Ali * *Alj;
+				sumL += (SCALE)(*Adk * *Ali * *Alj);
 			}
 			*_Al = (*_Al - sumL) / *AdInn;
-			sumD += *AdInn * *_Al * *_Al;
+			sumD += (SCALE)(*AdInn * *_Al * *_Al);
 		}
 		*_Ad = *_Ad - sumD;
 	}
@@ -144,17 +144,17 @@ void SLAESolverLDLT::directRun() {
 	z++;
 	DATA_TYPE* pb = b + 1;
 	for (int im = 1; im < p + 1; im++, z++, pb++) {
-		DATA_TYPE sumZ = 0;
+		SCALE sumZ = 0;
 		for (DATA_TYPE* zInn = x, *li = &Al[im * p + p - im]; zInn < z; zInn++, li++) {
-			sumZ += *li * *zInn;
+			sumZ += (SCALE)(*li * *zInn);
 		}
 		*z = *pb - sumZ;
 	}
 
 	for (int im = p + 1; im < n; im++, z++, pb++) {
-		DATA_TYPE sumZ = 0;
+		SCALE sumZ = 0;
 		for (DATA_TYPE* zInn = &x[im - p], *li = &Al[im * p]; zInn < z; zInn++, li++) {
-			sumZ += *li * *zInn;
+			sumZ += (SCALE)(*li * *zInn);
 		}
 		*z = *pb - sumZ;
 	}

@@ -14,9 +14,8 @@
 #include <iostream>
 #include <fstream>
 
-#define DATA_TYPE double
-#define ERROR_INFO_STRING_LENGTH 70
-#define WARNING_INFO_STRING_LENGTH 70
+
+#define SCALE double
 
 
 using namespace std;
